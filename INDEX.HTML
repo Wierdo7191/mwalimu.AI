@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mwalimu Homeschooling - Complete LMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --maroon: #800020;
+            --maroon-dark: #600018;
+            --maroon-light: #9a0026;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sharp-edge { border-radius: 0; }
+        .text-maroon { color: var(--maroon); }
+        .bg-maroon { background-color: var(--maroon); }
+        .border-maroon { border-color: var(--maroon); }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 50;
+        }
+        
+        .dropdown:hover .dropdown-content { display: block; }
+        
+        .chat-container { height: 400px; overflow-y: auto; }
+        .chat-message { max-width: 80%; margin-bottom: 10px; padding: 10px 15px; border-radius: 4px; }
+        .user-message { background-color: #f0f0f0; margin-left: auto; }
+        .ai-message { background-color: #f8f0f0; margin-right: auto; }
+        
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 99;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background-color: var(--maroon);
+            color: white;
+            border-radius: 2px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 101;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .notification.show { opacity: 1; transform: translateY(0); }
+        
+        [data-page] { display: none; }
+        [data-page].active { display: block; }
+        
+        @media (max-width: 768px) {
+            .desktop-menu { display: none; }
+            .mobile-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; z-index: 90; padding: 20px; overflow-y: auto; }
+            .mobile-menu.active { display: block; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-[#800020] text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="#" class="flex items-center" onclick="navigateTo('home')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 sharp-edge" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l9-5-9-5-9 5 9 5zm0 0v7" />
+                        </svg>
+                        <span class="ml-3 text-xl font-semibold">Mwalimu Homeschooling</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-6 desktop-menu">
+                    <div class="dropdown">
+                        <button class="px-3 py-2 hover:bg-black rounded-none transition">
+                            Live Tutor <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="dropdown-content mt-1 rounded-none">
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-b border-gray-100" onclick="navigateTo('tutors')">Find a Tutor</a>
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-b border-gray-100" onclick="navigateTo('schedule')">Schedule Session</a>
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-100" onclick="navigateTo('become-tutor')">Become a Tutor</a>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <button class="px-3 py-2 hover:bg-black rounded-none transition">
+                            Library <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="dropdown-content mt-1 rounded-none">
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-b border-gray-100" onclick="navigateTo('ebooks')">E-Books</a>
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-b border-gray-100" onclick="navigateTo('videos')">Video Lessons</a>
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-b border-gray-100" onclick="navigateTo('tests')">Practice Tests</a>
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-100" onclick="navigateTo('materials')">Study Materials</a>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <button class="px-3 py-2 hover:bg-black rounded-none transition">
+                            Role <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="dropdown-content mt-1 rounded-none">
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-b border-gray-100" onclick="navigateTo('student')">Student</a>
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-100 border-b border-gray-100" onclick="navigateTo('parent')">Parent</a>
+                            <a href="#" class="block px-4 py-3 hover:bg-gray-100" onclick="navigateTo('teacher')">Teacher</a>
+                        </div>
+                    </div>
+
+                    <a href="#" class="px-3 py-2 hover:bg-black rounded-none transition" onclick="navigateTo('ai-chat')">
+                        Mwalimu AI
+                    </a>
+                </nav>
+
+                <div class="flex items-center space-x-4">
+                    <button class="bg-white text-[#800020] px-4 py-2 rounded-none hover:bg-gray-100 transition font-medium" onclick="showLoginPopup('login')">Log In</button>
+                    <button class="bg-black text-white px-4 py-2 rounded-none hover:bg-gray-800 transition font-medium" onclick="showLoginPopup('signup')">Sign Up</button>
+                    <button class="md:hidden text-white focus:outline-none" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold">Menu</h2>
+            <button onclick="toggleMobileMenu()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <button class="flex justify-between items-center w-full py-2 px-3 rounded-none bg-gray-100" onclick="toggleMobileSubmenu('liveTutorSubmenu')">
+                    <span>Live Tutor</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="pl-4 mt-2 space-y-2 hidden" id="liveTutorSubmenu">
+                    <a href="#" class="block py-2 px-3 hover:bg-gray-100 rounded-none" onclick="navigateTo('tutors')">Find a Tutor</a>
+                    <a href="#" class="block py-2 px-3 hover:bg-gray-100 rounded-none" onclick="navigateTo('schedule')">Schedule Session</a>
+                    <a href="#" class="block py-2 px-3 hover:bg-gray-100 rounded-none" onclick="navigateTo('become-tutor')">Become a Tutor</a>
+                </div>
+            </div>
+
+            <div>
+                <button class="flex justify-between items-center w-full py-2 px-3 rounded-none bg-gray-100" onclick="toggleMobileSubmenu('librarySubmenu')">
+                    <span>Library</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="pl-4 mt-2 space-y-2 hidden" id="librarySubmenu">
+                    <a href="#" class="block py-2 px-3 hover:bg-gray-100 rounded-none" onclick="navigateTo('ebooks')">E-Books</a>
+                    <a href="#" class="block py-2 px-3 hover:bg-gray-100 rounded-none" onclick="navigateTo('videos')">Video Lessons</a>
+                    <a href="#" class="block py-2 px-3 hover:bg-gray-100 rounded-none" onclick="navigateTo('tests')">Practice Tests</a>
+                    <a href="#" class="block py-2 px-3 hover:bg-gray-100 rounded-none" onclick="navigateTo('materials')">Study Materials</a>
+                </div>
+            </div>
+
+            <div>
+                <button class="flex justify-between items-center w-full py-2 px-3 rounded-none bg-gray-100" onclick="toggleMobileSubmenu('roleSubmenu')">
+                    <span>Role</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="pl-4 mt-2 space-y-2 hidden" id="roleSubmenu">
+                    <a href="#" class="block py-2 px-3 hover:bg-gray-100 rounded-none" onclick="navigateTo('student')">Student</a>
+                    <a href="#" class="block py-2 px-3 hover:bg-gray-100 rounded-none" onclick="navigateTo('parent')">Parent</a>
+                    <a href="#" class="block py-2 px-3 hover:bg-gray-100 rounded-none" onclick="navigateTo('teacher')">Teacher</a>
+                </div>
+            </div>
+
+            <a href="#" class="block py-2 px-3 rounded-none hover:bg-gray-100" onclick="navigateTo('ai-chat')">
+                Mwalimu AI
+            </a>
+
+            <div class="pt-4 border-t border-gray-200">
+                <button class="w-full py-3 bg-[#800020] text-white rounded-none mb-3" onclick="showLoginPopup('login'); toggleMobileMenu();">Log In</button>
+                <button class="w-full py-3 bg-black text-white rounded-none" onclick="showLoginPopup('signup'); toggleMobileMenu();">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <!-- Home Page -->
+        <section data-page="home" class="active">
+            <div class="bg-gradient-to-b from-[#f8f0f0] to-white py-16">
+                <div class="container mx-auto px-4">
+                    <div class="flex flex-col md:flex-row items-center">
+                        <div class="md:w-1/2 mb-10 md:mb-0">
+                            <h1 class="text-4xl md:text-5xl font-semibold text-gray-800 mb-6">Learn at Your Own Pace, Anywhere, Anytime</h1>
+                            <p class="text-lg text-gray-600 mb-8">Join our community of learners and access quality education from the comfort of your home.</p>
+                            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                                <button class="bg-[#800020] text-white px-6 py-3 rounded-none hover:bg-[#800018] transition font-medium" onclick="showLoginPopup('signup')">Get Started</button>
+                                <button class="border border-[#800020] text-[#800020] px-6 py-3 rounded-none hover:bg-[#800020] hover:text-white transition font-medium" onclick="navigateTo('services')">Learn More</button>
+                            </div>
+                        </div>
+                        <div class="md:w-1/2">
+                            <div class="relative">
+                                <div class="absolute -top-6 -left-6 w-20 h-20 bg-[#800020] opacity-70 sharp-edge"></div>
+                                <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-[#800020] opacity-30 sharp-edge"></div>
+                                <img src="https://via.placeholder.com/500x400" alt="Learning Illustration" class="w-full h-auto sharp-edge">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Section -->
+            <section id="services" class="py-16 bg-white">
+                <div class="container mx-auto px-4">
+                    <h2 class="text-3xl font-semibold text-center mb-12">Our Services</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <!-- Live Tutor Card -->
+                        <div class="bg-white p-6 border border-gray-200 shadow-md hover:shadow-lg transition">
+                            <div class="bg-[#f8f0f0] w-16 h-16 flex items-center justify-center mb-4 sharp-edge">
+                                <i class="fas fa-chalkboard-teacher text-[#800020] text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Live Tutoring</h3>
+                            <p class="text-gray-600 mb-4">Connect with expert tutors for personalized one-on-one learning sessions.</p>
+                            <a href="#" class="text-[#800020] font-medium hover:text-black transition" onclick="navigateTo('tutors')">Learn more →</a>
+                        </div>
+
+                        <!-- Library Card -->
+                        <div class="bg-white p-6 border border-gray-200 shadow-md hover:shadow-lg transition">
+                            <div class="bg-[#f8f0f0] w-16 h-16 flex items-center justify-center mb-4 sharp-edge">
+                                <i class="fas fa-book text-[#800020] text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Digital Library</h3>
+                            <p class="text-gray-600 mb-4">Access thousands of e-books, videos, and learning resources anytime.</p>
+                            <a href="#" class="text-[#800020] font-medium hover:text-black transition" onclick="navigateTo('library')">Explore resources →</a>
+                        </div>
+
+                        <!-- Role-Based Learning Card -->
+                        <div class="bg-white p-6 border border-gray-200 shadow-md hover:shadow-lg transition">
+                            <div class="bg-[#f8f0f0] w-16 h-16 flex items-center justify-center mb-4 sharp-edge">
+                                <i class="fas fa-users text-[#800020] text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Role-Based Learning</h3>
+                            <p class="text-gray-600 mb-4">Customized learning paths for students, parents, and teachers.</p>
+                            <a href="#" class="text-[#800020] font-medium hover:text-black transition" onclick="navigateTo('roles')">Find your path →</a>
+                        </div>
+
+                        <!-- Mwalimu AI Card -->
+                        <div class="bg-white p-6 border border-gray-200 shadow-md hover:shadow-lg transition">
+                            <div class="bg-[#f8f0f0] w-16 h-16 flex items-center justify-center mb-4 sharp-edge">
+                                <i class="fas fa-robot text-[#800020] text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">Mwalimu AI</h3>
+                            <p class="text-gray-600 mb-4">Get instant help with homework and practice problems using our AI assistant.</p>
+                            <a href="#" class="text-[#800020] font-medium hover:text-black transition" onclick="navigateTo('ai-chat')">Chat with AI →</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Community Q&A Preview -->
+            <section class="py-16 bg-gray-50">
+                <div class="container mx-auto px-4">
+                    <div class="max-w-4xl mx-auto">
+                        <h2 class="text-3xl font-semibold text-center mb-6">Community Q&A</h2>
+                        <p class="text-gray-600 text-center max-w-3xl mx-auto mb-12">Ask questions and get answers from peers and teachers in our community.</p>
+
+                        <div class="bg-white p-6 shadow-md mb-8">
+                            <div class="flex items-center mb-4">
+                                <div class="w-10 h-10 bg-[#f8f0f0] flex items-center justify-center sharp-edge mr-3">
+                                    <i class="fas fa-user text-[#800020]"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">How do I solve quadratic equations?</h4>
+                                    <p class="text-sm text-gray-500">Posted by Sarah K. 2 hours ago</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 mb-4">I'm struggling with solving quadratic equations. Can someone explain the different methods?</p>
+                            <div class="flex justify-between items-center">
+                                <div class="flex space-x-4">
+                                    <span class="text-sm text-gray-600"><i class="fas fa-thumbs-up text-[#800020] mr-1"></i> 24</span>
+                                    <span class="text-sm text-gray-600"><i class="fas fa-comment mr-1"></i> 5 answers</span>
+                                </div>
+                                <button class="text-[#800020] font-medium" onclick="navigateTo('community')">View all questions →</button>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button class="bg-[#800020] text-white px-6 py-3 hover:bg-[#600018] transition font-medium rounded-none" onclick="navigateTo('community')">Join the Community</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- Live Tutors Page -->
+        <section data-page="tutors" class="py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-semibold mb-8">Find a Live Tutor</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Tutor cards would be dynamically loaded here -->
+                    <div class="bg-white p-6 border border-gray-200 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <div class="w-16 h-16 bg-[#f8f0f0] flex items-center justify-center sharp-edge mr-4">
+                                <i class="fas fa-user text-[#800020] text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold">Prof. Johnson</h3>
+                                <p class="text-gray-600">Mathematics Tutor</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-4">Expert in algebra, calculus, and geometry with 10 years of teaching experience.</p>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <span class="text-yellow-400"><i class="fas fa-star"></i> 4.9</span>
+                                <span class="text-gray-600 ml-3">(128 reviews)</span>
+                            </div>
+                            <button class="bg-[#800020] text-white px-4 py-2 hover:bg-[#600018] transition rounded-none" onclick="navigateTo('schedule')">Book Session</button>
+                        </div>
+                    </div>
+                    
+                    <!-- More tutor cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Schedule Session Page -->
+        <section data-page="schedule" class="py-16">
+            <div class="container mx-auto px-4 max-w-4xl">
+                <h2 class="text-3xl font-semibold mb-8">Schedule a Tutoring Session</h2>
+                
+                <div class="bg-white p-6 shadow-md">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4">Select Tutor</h3>
+                            <!-- Tutor selection would go here -->
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4">Select Date & Time</h3>
+                            <!-- Calendar and time selection would go here -->
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button class="bg-[#800020] text-white px-6 py-3 hover:bg-[#600018] transition font-medium rounded-none w-full">Confirm Booking</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Become a Tutor Page -->
+        <section data-page="become-tutor" class="py-16">
+            <div class="container mx-auto px-4 max-w-4xl">
+                <h2 class="text-3xl font-semibold mb-8">Become a Tutor</h2>
+                
+                <div class="bg-white p-6 shadow-md">
+                    <p class="text-gray-600 mb-6">Join our team of expert tutors and help students achieve their academic goals while earning income on your schedule.</p>
+                    
+                    <form>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-gray-700 mb-2">Full Name</label>
+                                <input type="text" class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Email</label>
+                                <input type="email" class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Subject Expertise</label>
+                                <select class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none">
+                                    <option>Select subject</option>
+                                    <option>Mathematics</option>
+                                    <option>Science</option>
+                                    <option>English</option>
+                                    <option>History</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Education Level</label>
+                                <select class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none">
+                                    <option>Select level</option>
+                                    <option>Primary School</option>
+                                    <option>Secondary School</option>
+                                    <option>High School</option>
+                                    <option>University</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2">Teaching Experience</label>
+                            <textarea class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none" rows="3"></textarea>
+                        </div>
+                        
+                        <button class="bg-[#800020] text-white px-6 py-3 hover:bg-[#600018] transition font-medium rounded-none w-full">Submit Application</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Digital Library Page -->
+        <section data-page="library" class="py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-semibold mb-8">Digital Library</h2>
+                
+                <div class="flex flex-wrap gap-4 mb-8">
+                    <button class="bg-[#800020] text-white px-4 py-2 rounded-none">All Resources</button>
+                    <button class="border border-[#800020] text-[#800020] px-4 py-2 rounded-none hover:bg-[#800020] hover:text-white transition" onclick="navigateTo('ebooks')">E-Books</button>
+                    <button class="border border-[#800020] text-[#800020] px-4 py-2 rounded-none hover:bg-[#800020] hover:text-white transition" onclick="navigateTo('videos')">Video Lessons</button>
+                    <button class="border border-[#800020] text-[#800020] px-4 py-2 rounded-none hover:bg-[#800020] hover:text-white transition" onclick="navigateTo('tests')">Practice Tests</button>
+                    <button class="border border-[#800020] text-[#800020] px-4 py-2 rounded-none hover:bg-[#800020] hover:text-white transition" onclick="navigateTo('materials')">Study Materials</button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Resource cards would be dynamically loaded here -->
+                    <div class="bg-white p-4 border border-gray-200 shadow-sm hover:shadow-md transition">
+                        <div class="bg-[#f8f0f0] w-full h-40 flex items-center justify-center mb-4 sharp-edge">
+                            <i class="fas fa-book-open text-[#800020] text-4xl"></i>
+                        </div>
+                        <h3 class="font-semibold mb-1">Algebra Fundamentals</h3>
+                        <p class="text-gray-600 text-sm mb-2">E-Book • Mathematics</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">Grade 7-9</span>
+                            <button class="text-[#800020] text-sm font-medium">View →</button>
+                        </div>
+                    </div>
+                    
+                    <!-- More resource cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- E-Books Page -->
+        <section data-page="ebooks" class="py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-semibold mb-8">E-Books</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- E-Book cards would be dynamically loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Video Lessons Page -->
+        <section data-page="videos" class="py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-semibold mb-8">Video Lessons</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Video cards would be dynamically loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Practice Tests Page -->
+        <section data-page="tests" class="py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-semibold mb-8">Practice Tests</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Test cards would be dynamically loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Study Materials Page -->
+        <section data-page="materials" class="py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-semibold mb-8">Study Materials</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Material cards would be dynamically loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Role-Based Learning Pages -->
+        <section data-page="student" class="py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-semibold mb-8">Student Resources</h2>
+                <!-- Student-specific content -->
+            </div>
+        </section>
+
+        <section data-page="parent" class="py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-semibold mb-8">Parent Resources</h2>
+                <!-- Parent-specific content -->
+            </div>
+        </section>
+
+        <section data-page="teacher" class="py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-semibold mb-8">Teacher Resources</h2>
+                <!-- Teacher-specific content -->
+            </div>
+        </section>
+
+        <!-- Mwalimu AI Chat Page -->
+        <section data-page="ai-chat" class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-semibold text-center mb-12">Chat with Mwalimu AI</h2>
+
+                    <div class="bg-white shadow-lg overflow-hidden">
+                        <div class="bg-[#800020] text-white p-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-white flex items-center justify-center sharp-edge">
+                                    <i class="fas fa-robot text-[#800020]"></i>
+                                </div>
+                                <h3 class="ml-3 text-xl font-semibold">Mwalimu AI Assistant</h3>
+                            </div>
+                        </div>
+
+                        <div class="chat-container p-4" id="chatContainer" style="height: 400px;">
+                            <div class="ai-message chat-message">
+                                <p>Hello! I'm Mwalimu AI, your learning assistant. How can I help you today?</p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 border-t">
+                            <div class="flex">
+                                <input type="text" id="chatInput" placeholder="Ask Mwalimu AI anything..." class="flex-grow px-4 py-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none">
+                                <button class="bg-[#800020] text-white px-6 py-3 hover:bg-[#600018] transition rounded-none" onclick="sendMessage()">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community Q&A Page -->
+        <section data-page="community" class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-semibold text-center mb-6">Community Q&A</h2>
+                <p class="text-gray-600 text-center max-w-3xl mx-auto mb-12">Ask questions and get answers from peers and teachers in our community.</p>
+
+                <div class="max-w-4xl mx-auto">
+                    <!-- Ask Question Box -->
+                    <div class="bg-gray-50 p-6 mb-10 shadow-md">
+                        <h3 class="text-xl font-semibold mb-4">Ask Anything Here</h3>
+                        <textarea id="questionInput" class="w-full p-4 border focus:outline-none focus:ring-2 focus:ring-[#800020] mb-4 rounded-none" rows="3" placeholder="Type your question here..."></textarea>
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox h-5 w-5 text-[#800020]">
+                                    <span class="ml-2 text-gray-700">Notify me of answers</span>
+                                </label>
+                            </div>
+                            <button class="bg-[#800020] text-white px-6 py-2 hover:bg-[#600018] transition rounded-none" onclick="postQuestion()">Post Question</button>
+                        </div>
+                    </div>
+
+                    <!-- Questions List -->
+                    <h3 class="text-xl font-semibold mb-6">Recently Asked Questions</h3>
+
+                    <div id="questionsContainer">
+                        <!-- Questions would be dynamically loaded here -->
+                    </div>
+
+                    <div class="text-center mt-8">
+                        <button class="bg-[#f8f0f0] text-[#800020] px-6 py-3 hover:bg-[#800020] hover:text-white transition font-medium rounded-none" onclick="loadMoreQuestions()">View More Questions</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="text-xl font-semibold mb-4">Mwalimu Homeschooling</h4>
+                    <p class="text-gray-400 mb-4">Empowering education from anywhere, anytime.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition" onclick="navigateTo('home')">Home</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition" onclick="navigateTo('tutors')">Live Tutors</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition" onclick="navigateTo('library')">Library</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition" onclick="navigateTo('ai-chat')">Mwalimu AI</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition" onclick="navigateTo('community')">Community</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">FAQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Support</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Subscribe</h4>
+                    <p class="text-gray-400 mb-4">Stay updated with our latest news and offers.</p>
+                    <div class="flex">
+                        <input type="email" id="subscribeEmail" placeholder="Your email" class="px-4 py-2 focus:outline-none text-gray-800 w-full rounded-none">
+                        <button class="bg-[#800020] text-white px-4 py-2 hover:bg-[#600018] transition rounded-none" onclick="subscribe()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2023 Mwalimu Homeschooling. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="notificationMessage"></span>
+        </div>
+    </div>
+
+    <!-- Popup Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Login/Signup Popup -->
+    <div class="popup bg-white shadow-lg p-6 max-w-md rounded-none" id="loginPopup">
+        <div class="flex justify-between items-start mb-4">
+            <h3 class="text-xl font-bold" id="loginPopupTitle">Log In</h3>
+            <button onclick="closeLoginPopup()" class="text-gray-500 hover:text-black">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div id="loginForm">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Email</label>
+                <input type="email" id="loginEmail" class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none" placeholder="Enter your email">
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 mb-2">Password</label>
+                <input type="password" id="loginPassword" class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none" placeholder="Enter your password">
+            </div>
+
+            <div class="flex justify-between items-center mb-6">
+                <label class="flex items-center">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-[#800020]">
+                    <span class="ml-2 text-gray-700">Remember me</span>
+                </label>
+                <a href="#" class="text-[#800020] hover:text-black">Forgot password?</a>
+            </div>
+
+            <button class="w-full bg-[#800020] text-white py-3 hover:bg-[#600018] transition font-medium mb-4 rounded-none" onclick="processLogin()">Log In</button>
+
+            <p class="text-center text-gray-600">Don't have an account? <a href="#" class="text-[#800020] hover:text-black" onclick="switchLoginForm('signup')">Sign up</a></p>
+        </div>
+
+        <div id="signupForm" class="hidden">
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Full Name</label>
+                <input type="text" id="signupName" class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none" placeholder="Enter your full name">
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Email</label>
+                <input type="email" id="signupEmail" class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none" placeholder="Enter your email">
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Password</label>
+                <input type="password" id="signupPassword" class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none" placeholder="Create a password">
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 mb-2">Role</label>
+                <select id="signupRole" class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] rounded-none">
+                    <option value="">Select your role</option>
+                    <option value="student">Student</option>
+                    <option value="parent">Parent</option>
+                    <option value="teacher">Teacher</option>
+                </select>
+            </div>
+
+            <button class="w-full bg-[#800020] text-white py-3 hover:bg-[#600018] transition font-medium mb-4 rounded-none" onclick="processSignup()">Sign Up</button>
+
+            <p class="text-center text-gray-600">Already have an account? <a href="#" class="text-[#800020] hover:text-black" onclick="switchLoginForm('login')">Log in</a></p>
+        </div>
+    </div>
+
+    <!-- Report Popup -->
+    <div class="popup bg-white shadow-lg p-6 max-w-md rounded-none" id="reportPopup">
+        <div class="flex justify-between items-start mb-4">
+            <h3 class="text-xl font-bold">Report Content</h3>
+            <button onclick="closeReportPopup()" class="text-gray-500 hover:text-black">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <p class="text-gray-700 mb-4">Please select a reason for reporting this content:</p>
+
+        <div class="space-y-2 mb-4">
+            <label class="flex items-center">
+                <input type="radio" name="report-reason" class="form-radio h-5 w-5 text-[#800020]">
+                <span class="ml-2">Inappropriate content</span>
+            </label>
+            <label class="flex items-center">
+                <input type="radio" name="report-reason" class="form-radio h-5 w-5 text-[#800020]">
+                <span class="ml-2">Incorrect information</span>
+            </label>
+            <label class="flex items-center">
+                <input type="radio" name="report-reason" class="form-radio h-5 w-5 text-[#800020]">
+                <span class="ml-2">Spam or advertising</span>
+            </label>
+            <label class="flex items-center">
+                <input type="radio" name="report-reason" class="form-radio h-5 w-5 text-[#800020]">
+                <span class="ml-2">Other</span>
+            </label>
+        </div>
+
+        <textarea class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] mb-4 rounded-none" rows="3" placeholder="Additional details (optional)"></textarea>
+
+        <div class="flex justify-end">
+            <button onclick="closeReportPopup()" class="bg-gray-200 text-gray-800 px-4 py-2 hover:bg-gray-300 transition mr-2 rounded-none">Cancel</button>
+            <button onclick="submitReport()" class="bg-[#800020] text-white px-4 py-2 hover:bg-[#600018] transition rounded-none">Submit Report</button>
+        </div>
+    </div>
+
+    <!-- Teacher Ad -->
+    <div class="popup bg-white shadow-lg p-6 max-w-md" id="teacherAd" style="display: none; bottom: 20px; right: 20px; top: auto; left: auto; transform: none;">
+        <div class="flex justify-between items-start mb-4">
+            <h3 class="text-xl font-bold text-[#800020]">Join Our Teaching Community!</h3>
+            <button onclick="closeTeacherAd()" class="text-gray-500 hover:text-black">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <p class="text-gray-700 mb-4">Join thousands of other teachers and help students struggling with their education while earning extra income.</p>
+
+        <div class="flex items-center mb-4">
+            <div class="flex -space-x-2 mr-3">
+                <div class="w-8 h-8 border-2 border-white sharp-edge bg-[#800020] flex items-center justify-center text-white">1</div>
+                <div class="w-8 h-8 border-2 border-white sharp-edge bg-[#800020] flex items-center justify-center text-white">5</div>
+                <div class="w-8 h-8 border-2 border-white sharp-edge bg-[#800020] flex items-center justify-center text-white">M</div>
+            </div>
+            <span class="text-sm text-gray-600"><b>+2,500 teachers already joined</b></span>
+        </div>
+
+        <button class="w-full bg-[#800020] text-white py-3 hover:bg-[#600018] transition font-medium rounded-none" onclick="showLoginPopup('signup')">Become a Teacher</button>
+    </div>
+
+    <script>
+        // Navigation System
+        function navigateTo(page) {
+            // Hide all pages
+            document.querySelectorAll('[data-page]').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.querySelector(`[data-page="${page}"]`).classList.add('active');
+            
+            // Close mobile menu if open
+            document.getElementById('mobileMenu').classList.remove('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+            
+            // Update URL without reload
+            history.pushState({}, '', `#${page}`);
+        }
+        
+        // Handle back/forward navigation
+        window.addEventListener('popstate', function() {
+            const page = window.location.hash.substring(1) || 'home';
+            navigateTo(page);
+        });
+        
+        // Initialize based on URL hash
+        document.addEventListener('DOMContentLoaded', function() {
+            const page = window.location.hash.substring(1) || 'home';
+            navigateTo(page);
+            
+            // Show teacher ad after delay
+            setTimeout(() => {
+                document.getElementById('teacherAd').style.display = 'block';
+            }, 10000);
+        });
+        
+        // Mobile Menu
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('active');
+        }
+        
+        function toggleMobileSubmenu(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
+        
+        // Notification System
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notificationMessage');
+            
+            // Set icon based on type
+            const icon = notification.querySelector('i');
+            if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle mr-2';
+            } else {
+                icon.className = 'fas fa-check-circle mr-2';
+            }
+            
+            notificationMessage.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Popup Management
+        function showLoginPopup(type) {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('loginPopup').style.display = 'block';
+            switchLoginForm(type);
+        }
+        
+        function closeLoginPopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('loginPopup').style.display = 'none';
+        }
+        
+        function switchLoginForm(type) {
+            if (type === 'login') {
+                document.getElementById('loginForm').classList.remove('hidden');
+                document.getElementById('signupForm').classList.add('hidden');
+                document.getElementById('loginPopupTitle').textContent = 'Log In';
+            } else {
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('signupForm').classList.remove('hidden');
+                document.getElementById('loginPopupTitle').textContent = 'Sign Up';
+            }
+        }
+        
+        function showReportPopup(type, id) {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('reportPopup').style.display = 'block';
+            document.getElementById('reportPopup').dataset.type = type;
+            document.getElementById('reportPopup').dataset.id = id;
+        }
+        
+        function closeReportPopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('reportPopup').style.display = 'none';
+        }
+        
+        function closeTeacherAd() {
+            document.getElementById('teacherAd').style.display = 'none';
+        }
+        
+        // Form Processing
+        function processLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            
+            if (email && password) {
+                closeLoginPopup();
+                showNotification('You have successfully logged in!');
+            } else {
+                showNotification('Please enter both email and password', 'error');
+            }
+        }
+        
+        function processSignup() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value.trim();
+            const role = document.getElementById('signupRole').value;
+            
+            if (name && email && password && role) {
+                closeLoginPopup();
+                showNotification('Account created successfully! Welcome to Mwalimu Homeschooling.');
+            } else {
+                showNotification('Please fill in all required fields', 'error');
+            }
+        }
+        
+        function subscribe() {
+            const email = document.getElementById('subscribeEmail').value.trim();
+            
+            if (email) {
+                document.getElementById('subscribeEmail').value = "";
+                showNotification('Thanks for subscribing to our newsletter!');
+            } else {
+                showNotification('Please enter your email address', 'error');
+            }
+        }
+        
+        function submitReport() {
+            closeReportPopup();
+            showNotification('Thank you for your report. We will review it shortly.');
+        }
+        
+        // Chat Functionality
+        function sendMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const chatContainer = document.getElementById('chatContainer');
+            const message = chatInput.value.trim();
+            
+            if (message) {
+                // Add user message
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.className = 'user-message chat-message';
+                userMessageDiv.innerHTML = `<p>${message}</p>`;
+                chatContainer.appendChild(userMessageDiv);
+                
+                // Clear input
+                chatInput.value = "";
+                
+                // Simulate AI response
+                setTimeout(() => {
+                    const aiMessageDiv = document.createElement('div');
+                    aiMessageDiv.className = 'ai-message chat-message';
+                    
+                    // Generate response
+                    let response = "I'm here to help with your learning. Could you provide more details about your question?";
+                    if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+                        response = 'Hello! How can I assist with your learning today?';
+                    } else if (message.toLowerCase().includes('math')) {
+                        response = 'I can help with math! Are you working on algebra, geometry, or another topic?';
+                    } else if (message.toLowerCase().includes('science')) {
+                        response = 'Science is fascinating! What specific area are you studying?';
+                    }
+                    
+                    aiMessageDiv.innerHTML = `<p>${response}</p>`;
+                    chatContainer.appendChild(aiMessageDiv);
+                    
+                    // Scroll to bottom
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }, 1000);
+                
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+        
+        // Chat input enter key
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Question & Answer System
+        function postQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const questionsContainer = document.getElementById('questionsContainer');
+            const question = questionInput.value.trim();
+            
+            if (question.length < 10) {
+                showNotification('Please enter a more detailed question', 'error');
+                return;
+            }
+            
+            if (question) {
+                const questionId = Date.now();
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card bg-white p-6 mb-6 border border-gray-200 shadow-sm';
+                questionCard.id = `question-${questionId}`;
+                questionCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h4 class="text-lg font-medium text-gray-800">${question}</h4>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-500 hover:text-black" onclick="showReportPopup('question', ${questionId})">
+                                <i class="fas fa-flag"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mt-2 mb-4">Just posted</p>
+                    <div class="flex items-center text-sm text-gray-500 mb-4">
+                        <span class="mr-4"><i class="fas fa-user mr-1"></i> You</span>
+                        <span><i class="fas fa-clock mr-1"></i> Just now</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex space-x-4">
+                            <button class="flex items-center text-gray-600 hover:text-[#800020]" onclick="voteQuestion(${questionId}, 'up')">
+                                <i class="fas fa-arrow-up mr-1" id="upvote-${questionId}"></i> <span id="upvote-count-${questionId}">0</span>
+                            </button>
+                            <button class="flex items-center text-gray-600 hover:text-black" onclick="voteQuestion(${questionId}, 'down')">
+                                <i class="fas fa-arrow-down mr-1" id="downvote-${questionId}"></i> <span id="downvote-count-${questionId}">0</span>
+                            </button>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button class="flex items-center text-gray-600 hover:text-[#800020]" onclick="toggleAnswers(${questionId})">
+                                <i class="fas fa-comment mr-1"></i> <span>0 Answers</span>
+                            </button>
+                            <button class="flex items-center text-gray-600 hover:text-[#800020]" onclick="saveQuestion(${questionId})" id="save-${questionId}">
+                                <i class="fas fa-bookmark mr-1"></i> <span>Save</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-gray-100 hidden" id="answers-${questionId}">
+                        <div class="mt-4">
+                            <textarea id="answerInput-${questionId}" class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] mb-2 rounded-none" rows="2" placeholder="Write your answer..."></textarea>
+                            <button class="bg-[#800020] text-white px-4 py-2 hover:bg-[#600018] transition rounded-none" onclick="postAnswer(${questionId})">Post Answer</button>
+                        </div>
+                    </div>
+                `;
+                
+                questionsContainer.prepend(questionCard);
+                questionInput.value = '';
+                showNotification('Question posted successfully!');
+            }
+        }
+        
+        function toggleAnswers(id) {
+            const answersContainer = document.getElementById(`answers-${id}`);
+            answersContainer.classList.toggle('hidden');
+        }
+        
+        function postAnswer(questionId) {
+            const answerInput = document.getElementById(`answerInput-${questionId}`);
+            const answersContainer = document.getElementById(`answers-${questionId}`);
+            const answer = answerInput.value.trim();
+            
+            if (answer.length < 10) {
+                showNotification('Please provide a more detailed answer', 'error');
+                return;
+            }
+            
+            if (answer) {
+                const answerId = Date.now();
+                const answerElement = document.createElement('div');
+                answerElement.className = 'bg-[#f8f0f0] p-4 mb-4';
+                answerElement.innerHTML = `
+                    <p class="text-gray-800 mb-2">${answer}</p>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Answered by You</span>
+                        <div class="flex space-x-3">
+                            <button class="text-gray-500 hover:text-[#800020]" onclick="voteAnswer(${answerId}, 'up')"><i class="fas fa-thumbs-up" id="answer-upvote-${answerId}"></i> <span id="answer-upvote-count-${answerId}">0</span></button>
+                            <button class="text-gray-500 hover:text-black" onclick="voteAnswer(${answerId}, 'down')"><i class="fas fa-thumbs-down" id="answer-downvote-${answerId}"></i> <span id="answer-downvote-count-${answerId}">0</span></button>
+                            <button class="text-gray-500 hover:text-black" onclick="showReportPopup('answer', ${answerId})"><i class="fas fa-flag"></i></button>
+                        </div>
+                    </div>
+                `;
+                
+                const addAnswerSection = answersContainer.querySelector('.mt-4');
+                answersContainer.insertBefore(answerElement, addAnswerSection);
+                answerInput.value = '';
+                
+                // Update answer count
+                const answerCountElement = document.querySelector(`#question-${questionId} .flex.space-x-4 button:nth-child(1) span`);
+                const currentCount = parseInt(answerCountElement.textContent.split(' ')[0]) || 0;
+                answerCountElement.textContent = `${currentCount + 1} Answers`;
+                
+                showNotification('Answer posted successfully!');
+            }
+        }
+        
+        function voteQuestion(id, type) {
+            const upvoteIcon = document.getElementById(`upvote-${id}`);
+            const downvoteIcon = document.getElementById(`downvote-${id}`);
+            const upvoteCount = document.getElementById(`upvote-count-${id}`);
+            const downvoteCount = document.getElementById(`downvote-count-${id}`);
+            
+            if (type === 'up') {
+                if (upvoteIcon.classList.contains('text-[#800020]')) {
+                    // Already upvoted - remove upvote
+                    upvoteIcon.classList.remove('text-[#800020]');
+                    upvoteCount.textContent = parseInt(upvoteCount.textContent) - 1;
+                } else {
+                    // Add upvote
+                    upvoteIcon.classList.add('text-[#800020]');
+                    upvoteCount.textContent = parseInt(upvoteCount.textContent) + 1;
+                    
+                    // Remove downvote if exists
+                    if (downvoteIcon.classList.contains('text-black')) {
+                        downvoteIcon.classList.remove('text-black');
+                        downvoteCount.textContent = parseInt(downvoteCount.textContent) - 1;
+                    }
+                }
+            } else if (type === 'down') {
+                if (downvoteIcon.classList.contains('text-black')) {
+                    // Already downvoted - remove downvote
+                    downvoteIcon.classList.remove('text-black');
+                    downvoteCount.textContent = parseInt(downvoteCount.textContent) - 1;
+                } else {
+                    // Add downvote
+                    downvoteIcon.classList.add('text-black');
+                    downvoteCount.textContent = parseInt(downvoteCount.textContent) + 1;
+                    
+                    // Remove upvote if exists
+                    if (upvoteIcon.classList.contains('text-[#800020]')) {
+                        upvoteIcon.classList.remove('text-[#800020]');
+                        upvoteCount.textContent = parseInt(upvoteCount.textContent) - 1;
+                    }
+                }
+            }
+        }
+        
+        function voteAnswer(id, type) {
+            const upvoteIcon = document.getElementById(`answer-upvote-${id}`);
+            const downvoteIcon = document.getElementById(`answer-downvote-${id}`);
+            const upvoteCount = document.getElementById(`answer-upvote-count-${id}`);
+            const downvoteCount = document.getElementById(`answer-downvote-count-${id}`);
+            
+            if (type === 'up') {
+                if (upvoteIcon.classList.contains('text-[#800020]')) {
+                    upvoteIcon.classList.remove('text-[#800020]');
+                    upvoteCount.textContent = parseInt(upvoteCount.textContent) - 1;
+                } else {
+                    upvoteIcon.classList.add('text-[#800020]');
+                    upvoteCount.textContent = parseInt(upvoteCount.textContent) + 1;
+                    
+                    if (downvoteIcon.classList.contains('text-black')) {
+                        downvoteIcon.classList.remove('text-black');
+                        downvoteCount.textContent = parseInt(downvoteCount.textContent) - 1;
+                    }
+                }
+            } else if (type === 'down') {
+                if (downvoteIcon.classList.contains('text-black')) {
+                    downvoteIcon.classList.remove('text-black');
+                    downvoteCount.textContent = parseInt(downvoteCount.textContent) - 1;
+                } else {
+                    downvoteIcon.classList.add('text-black');
+                    downvoteCount.textContent = parseInt(downvoteCount.textContent) + 1;
+                    
+                    if (upvoteIcon.classList.contains('text-[#800020]')) {
+                        upvoteIcon.classList.remove('text-[#800020]');
+                        upvoteCount.textContent = parseInt(upvoteCount.textContent) - 1;
+                    }
+                }
+            }
+        }
+        
+        function saveQuestion(id) {
+            const saveButton = document.getElementById(`save-${id}`);
+            
+            if (saveButton.classList.contains('text-[#800020]')) {
+                saveButton.classList.remove('text-[#800020]');
+                saveButton.innerHTML = '<i class="fas fa-bookmark mr-1"></i> <span>Save</span>';
+                showNotification('Question removed from saved items');
+            } else {
+                saveButton.classList.add('text-[#800020]');
+                saveButton.innerHTML = '<i class="fas fa-bookmark mr-1"></i> <span>Saved</span>';
+                showNotification('Question saved successfully!');
+            }
+        }
+        
+        function loadMoreQuestions() {
+            showNotification('Loading more questions...');
+            // In a real app, this would fetch from a server
+            setTimeout(() => {
+                // Simulate adding a new question
+                const questionId = Date.now();
+                const questionsContainer = document.getElementById('questionsContainer');
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card bg-white p-6 mb-6 border border-gray-200 shadow-sm';
+                questionCard.id = `question-${questionId}`;
+                questionCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h4 class="text-lg font-medium text-gray-800">What is photosynthesis?</h4>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-500 hover:text-black" onclick="showReportPopup('question', ${questionId})">
+                                <i class="fas fa-flag"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mt-2 mb-4">I need to understand the process of photosynthesis for my biology class.</p>
+                    <div class="flex items-center text-sm text-gray-500 mb-4">
+                        <span class="mr-4"><i class="fas fa-user mr-1"></i> Emma W.</span>
+                        <span><i class="fas fa-clock mr-1"></i> 3 days ago</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex space-x-4">
+                            <button class="flex items-center text-gray-600 hover:text-[#800020]" onclick="voteQuestion(${questionId}, 'up')">
+                                <i class="fas fa-arrow-up mr-1" id="upvote-${questionId}"></i> <span id="upvote-count-${questionId}">12</span>
+                            </button>
+                            <button class="flex items-center text-gray-600 hover:text-black" onclick="voteQuestion(${questionId}, 'down')">
+                                <i class="fas fa-arrow-down mr-1" id="downvote-${questionId}"></i> <span id="downvote-count-${questionId}">1</span>
+                            </button>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button class="flex items-center text-gray-600 hover:text-[#800020]" onclick="toggleAnswers(${questionId})">
+                                <i class="fas fa-comment mr-1"></i> <span>4 Answers</span>
+                            </button>
+                            <button class="flex items-center text-gray-600 hover:text-[#800020]" onclick="saveQuestion(${questionId})" id="save-${questionId}">
+                                <i class="fas fa-bookmark mr-1"></i> <span>Save</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-gray-100 hidden" id="answers-${questionId}">
+                        <div class="bg-[#f8f0f0] p-4 mb-4">
+                            <p class="text-gray-800 mb-2">Photosynthesis is the process by which green plants and some other organisms use sunlight to synthesize foods with the help of chlorophyll pigment.</p>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600">Answered by Biology Teacher</span>
+                                <div class="flex space-x-3">
+                                    <button class="text-gray-500 hover:text-[#800020]" onclick="voteAnswer(${questionId}01, 'up')"><i class="fas fa-thumbs-up" id="answer-upvote-${questionId}01"></i> <span id="answer-upvote-count-${questionId}01">8</span></button>
+                                    <button class="text-gray-500 hover:text-black" onclick="voteAnswer(${questionId}01, 'down')"><i class="fas fa-thumbs-down" id="answer-downvote-${questionId}01"></i> <span id="answer-downvote-count-${questionId}01">0</span></button>
+                                    <button class="text-gray-500 hover:text-black" onclick="showReportPopup('answer', ${questionId}01)"><i class="fas fa-flag"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <textarea id="answerInput-${questionId}" class="w-full p-3 border focus:outline-none focus:ring-2 focus:ring-[#800020] mb-2 rounded-none" rows="2" placeholder="Write your answer..."></textarea>
+                            <button class="bg-[#800020] text-white px-4 py-2 hover:bg-[#600018] transition rounded-none" onclick="postAnswer(${questionId})">Post Answer</button>
+                        </div>
+                    </div>
+                `;
+                
+                questionsContainer.appendChild(questionCard);
+                showNotification('New questions loaded');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
